@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventTicketSystem", "EventTicketSystem\EventTicketSystem.csproj", "{9986260B-FB1C-41BB-BF27-5EDA3D65F4BF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventTicketSystem_DTOs", "EventTicketSystem_DTOs\EventTicketSystem_DTOs.csproj", "{BB4880CA-99C1-4F5A-A1D9-AA3D4A4013BF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{9986260B-FB1C-41BB-BF27-5EDA3D65F4BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9986260B-FB1C-41BB-BF27-5EDA3D65F4BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9986260B-FB1C-41BB-BF27-5EDA3D65F4BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BB4880CA-99C1-4F5A-A1D9-AA3D4A4013BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB4880CA-99C1-4F5A-A1D9-AA3D4A4013BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BB4880CA-99C1-4F5A-A1D9-AA3D4A4013BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BB4880CA-99C1-4F5A-A1D9-AA3D4A4013BF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace EventTicketSystem.Models;
+﻿namespace EventTicketSystem.Models;
 
 public class Event
 {

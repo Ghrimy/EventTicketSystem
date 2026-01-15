@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using EventTicketSystem_DTOs.EventDtos;
 using EventTicketSystem.Data;
 using EventTicketSystem.Models;
 using EventTicketSystem.Services.EventServices;
@@ -25,6 +26,19 @@ public class EventController(IEventService eventService) : ControllerBase
             return BadRequest(ex.Message);
         }
 
+    }
+
+    [HttpPost("CreateEvent")]
+    public async Task<IActionResult> CreateEvent(CreateEventDto eventDto)
+    {
+        try
+        {
+            return Ok(await eventService.CreateEventAsync(eventDto));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
     
 }

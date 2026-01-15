@@ -1,6 +1,11 @@
-﻿namespace EventTicketSystem_DTOs.EventDtos;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace EventTicketSystem_DTOs.EventDtos;
 
 public class EditEventDto
 {
-    
+    public string EventName { get; set; } = string.Empty;
+    public string EventDescription { get; set; } = string.Empty;
+    public DateTime EventDate { get; set; }
+    public string EventLocation { get; set; } = string.Empty;
 }

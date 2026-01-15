@@ -10,11 +10,8 @@ public class EventService(EventTicketDbContext context, IMapper mapper) : IEvent
 {
     public async Task<List<ShowAllEventsDto>> GetAllEventsAsync()
     {
-        var retrieveEvents = await context.Events.Where(e => e.EventDate >= DateTime.Today).ToListAsync();
-        if(retrieveEvents.Count == 0) throw new Exception("No events found");
-
-        var mappedEvents = mapper.Map<List<ShowAllEventsDto>>(retrieveEvents);
-        return mappedEvents;
+        var retrieveEvents = await context.Events.Where(e => e.EventId >= 0).ToListAsync();
+        return retrieveEvents.Count == 0 ? throw new Exception("No events found") : mapper.Map<List<ShowAllEventsDto>>(retrieveEvents);
     }
 
     public async Task<CreateEventDto> CreateEventAsync(CreateEventDto eventDto)
@@ -27,7 +24,6 @@ public class EventService(EventTicketDbContext context, IMapper mapper) : IEvent
         context.Events.Add(createNewEvent);
         await context.SaveChangesAsync();
         return eventDto;
-        
     }
 
     public async Task<EditEventDto> EditEventAsync(EditEventDto eventDto)

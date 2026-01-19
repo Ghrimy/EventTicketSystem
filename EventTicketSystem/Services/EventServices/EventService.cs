@@ -28,11 +28,22 @@ public class EventService(EventTicketDbContext context, IMapper mapper) : IEvent
 
     public async Task<EditEventDto> EditEventAsync(EditEventDto eventDto)
     {
-        throw new NotImplementedException();
+        var isExistingEvent = await context.Events.Where(e => e.EventName == eventDto.EventName).AnyAsync();
+        if(!isExistingEvent) throw new Exception("Event does not exist");
+        
+        var editEvent = mapper.Map<Event>(eventDto);
+        context.Events.Update(editEvent);
+        await context.SaveChangesAsync();
+        return eventDto;
     }
 
     public async Task<RemoveEventDto> RemoveEventAsync(RemoveEventDto eventDto)
     {
-        throw new NotImplementedException();
+        var isExistingEvent = await context.Events.FirstOrDefaultAsync(e => e.EventName == eventDto.EventName || e.EventId == eventDto.EventId);
+        if(isExistingEvent == null) throw new Exception("Event does not exist");
+
+        context.Events.Remove(isExistingEvent);
+        await context.SaveChangesAsync();
+        return eventDto;
     }
 }

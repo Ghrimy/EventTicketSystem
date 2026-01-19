@@ -40,5 +40,31 @@ public class EventController(IEventService eventService) : ControllerBase
             return BadRequest(ex.Message);
         }
     }
+
+    [HttpPatch("EditEvent")]
+    public async Task<IActionResult> EditEvent(EditEventDto editEventDto)
+    {
+        try
+        {
+            return Ok(await eventService.EditEventAsync(editEventDto));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpDelete("DeleteEvent")]
+    public async Task<IActionResult> DeleteEvent(RemoveEventDto removeEventDto)
+    {
+        try
+        {
+            return Ok(await eventService.RemoveEventAsync(removeEventDto));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
     
 }

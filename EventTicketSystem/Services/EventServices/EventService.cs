@@ -8,6 +8,14 @@ namespace EventTicketSystem.Services.EventServices;
 
 public class EventService(EventTicketDbContext context, IMapper mapper) : IEventService
 {
+    public async Task<List<ReturnEventDto>> GetEventByNameAsync(string eventName)
+    {
+        var findEvent = await context.Events.Where(e => e.EventName == eventName).ToListAsync();
+        if(findEvent == null) throw new Exception("Event does not exist");
+        
+        return mapper.Map<List<ReturnEventDto>>(findEvent);
+        
+    }
     public async Task<List<ShowAllEventsDto>> GetAllEventsAsync()
     {
         var retrieveEvents = await context.Events.Where(e => e.EventId >= 0).ToListAsync();
@@ -26,10 +34,10 @@ public class EventService(EventTicketDbContext context, IMapper mapper) : IEvent
         return eventDto;
     }
 
-    public async Task<EditEventDto> EditEventAsync(EditEventDto eventDto)
+    public async Task<EditEventDto> EditEventAsync(EditEventDto eventDto, string eventName)
     {
-        var isExistingEvent = await context.Events.Where(e => e.EventName == eventDto.EventName).AnyAsync();
-        if(!isExistingEvent) throw new Exception("Event does not exist");
+        var isExistingEvent = await context.Events.FirstOrDefaultAsync(e => e.EventName == eventName);
+        if(isExistingEvent == null) throw new Exception("Event does not exist");
         
         var editEvent = mapper.Map<Event>(eventDto);
         context.Events.Update(editEvent);

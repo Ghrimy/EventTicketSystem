@@ -12,6 +12,18 @@ namespace EventTicketSystem.Controllers;
 public class EventController(IEventService eventService) : ControllerBase
 {
 
+    [HttpGet("Event/{eventName}")]
+    public async Task<ActionResult<Event>> GetEventById(string eventName)
+    {
+        try
+        {
+            return Ok(await eventService.GetEventByNameAsync(eventName));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
     
     [HttpGet("Events")]
     public async Task<ActionResult<List<Event>>> GetEvents()
@@ -41,12 +53,12 @@ public class EventController(IEventService eventService) : ControllerBase
         }
     }
 
-    [HttpPatch("EditEvent")]
-    public async Task<IActionResult> EditEvent(EditEventDto editEventDto)
+    [HttpPatch("EditEvent/{eventId:int}")]
+    public async Task<IActionResult> EditEvent(EditEventDto editEventDto, string eventName)
     {
         try
         {
-            return Ok(await eventService.EditEventAsync(editEventDto));
+            return Ok(await eventService.EditEventAsync(editEventDto, eventName));
         }
         catch (Exception ex)
         {

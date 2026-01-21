@@ -6,8 +6,8 @@ public class Ticket
     public int Quantity { get; set; }
     public DateTime PurchasedAt { get; set; }
 
-    public int UserId { get; set; }
-    public User User { get; set; } = null!;
+    public string ApplicationUserId { get; set; } = default!;
+    public ApplicationUser ApplicationUser { get; set; } = null!;
 
     public int EventTicketId { get; set; }
     public EventTicket EventTicket { get; set; } = null!;

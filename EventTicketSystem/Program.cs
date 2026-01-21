@@ -1,6 +1,8 @@
 using EventTicketSystem.Data;
 using EventTicketSystem.MappingProfiles;
+using EventTicketSystem.Models;
 using EventTicketSystem.Services.EventServices;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,6 +10,11 @@ var builder = WebApplication.CreateBuilder(args);
 // Adds Db context
 builder.Services.AddDbContext<EventTicketDbContext>(options
     => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services
+    .AddIdentity<ApplicationUser, IdentityRole>()
+    .AddEntityFrameworkStores<EventTicketDbContext>()
+    .AddDefaultTokenProviders();
 
 // Add services to the container.
 builder.Services.AddScoped<IEventService, EventService>();
@@ -34,6 +41,8 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
 

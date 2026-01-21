@@ -6,16 +6,15 @@ namespace EventTicketSystem.Services.TicketService;
 
 public class TicketService(EventTicketDbContext context, IMapper mapper) : ITicketService
 {
-    public async Task FindCurrentUser(int userId)
+    public async Task FindCurrentUser()
     {
-        var user = await context.Users.FindAsync(userId);
+        var user = await context.ApplicationUsers.FindAsync();
     }
     public async Task<BookTicketDto> BookTicketAsync(int ticketId, int quantity)
     {
         var ticket = await context.Tickets.FindAsync(ticketId);
         if(ticket == null) throw new Exception("Ticket does not exist");
-        
-        
+        return null;
 
     }
 

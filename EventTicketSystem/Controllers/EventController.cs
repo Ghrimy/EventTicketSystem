@@ -1,6 +1,4 @@
-﻿using AutoMapper;
-using EventTicketSystem_DTOs.EventDtos;
-using EventTicketSystem.Data;
+﻿using EventTicketSystem_DTOs.EventDtos;
 using EventTicketSystem.Models;
 using EventTicketSystem.Services.EventServices;
 using Microsoft.AspNetCore.Mvc;
@@ -8,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace EventTicketSystem.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("api/[controller]")]
 public class EventController(IEventService eventService) : ControllerBase
 {
 

@@ -2,7 +2,6 @@
 using System.Security.Claims;
 using System.Text;
 using EventTicketSystem_DTOs.AuthDto;
-using EventTicketSystem.Data;
 using EventTicketSystem.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
@@ -12,7 +11,6 @@ namespace EventTicketSystem.Services.AuthServices;
 public class AuthService(UserManager<ApplicationUser> userManager,
     SignInManager<ApplicationUser> signInManager,
     IHttpContextAccessor httpContextAccessor,
-    EventTicketDbContext dbContext,
     IConfiguration configuration) : IAuthService
 {
     public async Task<AuthResultDto> RegisterUserAsync(RegisterUserDto registerUserDto)
@@ -26,9 +24,17 @@ public class AuthService(UserManager<ApplicationUser> userManager,
         
         var user = new ApplicationUser {UserName = registerUserDto.UserName, Email = registerUserDto.Email };
         var result = await userManager.CreateAsync(user, registerUserDto.Password);
-        await userManager.AddToRoleAsync(user, "User");
         
-
+        if (!result.Succeeded)
+        {
+            return new AuthResultDto
+            {
+                Succeeded = false,
+                Error = string.Join(", ", result.Errors.Select(e => e.Description))
+            };
+        }
+        
+        await userManager.AddToRoleAsync(user, "User");
         return new AuthResultDto()
         {
             Succeeded = result.Succeeded
@@ -91,5 +97,16 @@ public class AuthService(UserManager<ApplicationUser> userManager,
         );
 
         return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    public string GetUserId()
+    {
+        var user = httpContextAccessor.HttpContext?.User;
+
+        if (user == null || !user.Identity!.IsAuthenticated)
+            throw new UnauthorizedAccessException("User is not authenticated");
+
+        return user.FindFirstValue(ClaimTypes.NameIdentifier)
+               ?? throw new Exception("User id claim is missing");
     }
 }

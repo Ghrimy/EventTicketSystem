@@ -74,8 +74,6 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
-
-
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 

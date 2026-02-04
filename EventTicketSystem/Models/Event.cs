@@ -7,9 +7,12 @@ public class Event
     public string EventDescription { get; set; } = string.Empty;
     public DateTime EventDate { get; set; }
     public string EventLocation { get; set; } = string.Empty;
-    
+
+    public int TotalTickets { get; set; }
+    public decimal TicketPrice { get; set; }
+
     public string OrganizerId { get; set; } = default!;
     public ApplicationUser Organizer { get; set; } = default!;
 
-    public ICollection<EventTicket> TicketTypes { get; set; } = new List<EventTicket>();
+    public ICollection<Ticket> Tickets { get; set; } = new List<Ticket>();
 }

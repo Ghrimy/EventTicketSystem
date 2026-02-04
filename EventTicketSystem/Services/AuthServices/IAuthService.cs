@@ -11,4 +11,5 @@ public interface IAuthService
     public Task LogoutUserAsync();
     public ReturnCurrentUserDto GetCurrentUser();
     public Task<string> GenerateJwtToken(ApplicationUser user);
+    public string GetUserId();
 }

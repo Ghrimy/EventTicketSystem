@@ -26,8 +26,8 @@ public class MappingProfile :Profile
         CreateMap<Event, ReturnEventDto>();
         
         
-        //BookTicketDto -> EventTicket
-        CreateMap<BookTicketDto, EventTicket>();
-        CreateMap<EventTicket, BookTicketDto>();
+        //PurchaseTicketResultDto -> Ticket
+        CreateMap<PurchaseResultDto, Ticket>();
+        CreateMap<Ticket, PurchaseResultDto>();
     }
 }

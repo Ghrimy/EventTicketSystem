@@ -7,7 +7,7 @@ namespace EventTicketSystem.Services.TicketService;
 public interface ITicketService
 {
     public Task<PurchaseResultDto> PurchaseTicketAsync(PurchaseTicketDto purchaseTicketDto);
-    public Task<List<GetTicketInformationDto>> GetAllTicketsAsync();
+    public Task<List<GetTicketInformationDto>> GetAllTicketsForCurrentUserAsync();
     public Task<CancelTicketDto> CancelTicketAsync(int ticketId);
     public Task<GetTicketInformationDto> GetTicketByNameAsync(int eventId);
 }

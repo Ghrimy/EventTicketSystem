@@ -31,4 +31,8 @@
       <ProjectReference Include="..\EventTicketSystem_DTOs\EventTicketSystem_DTOs.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Migrations\" />
+    </ItemGroup>
+
 </Project>

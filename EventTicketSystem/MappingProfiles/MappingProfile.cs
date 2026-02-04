@@ -5,7 +5,7 @@ using EventTicketSystem.Models;
 
 namespace EventTicketSystem.MappingProfiles;
 
-public class MappingProfile :Profile
+public class MappingProfile : Profile
 {
     public MappingProfile()
     {
@@ -21,10 +21,13 @@ public class MappingProfile :Profile
         CreateMap<Event, EditEventDto>();
         CreateMap<EditEventDto, Event>();
         
-        //ReturnEvent -> Event
+        //ReturnEventDto -> Event
         CreateMap<ReturnEventDto, Event>();
         CreateMap<Event, ReturnEventDto>();
         
+        //GetTicketInformationDto -> Ticket
+        CreateMap<Ticket, GetTicketInformationDto>();
+        CreateMap<GetTicketInformationDto, Ticket>();
         
         //PurchaseTicketResultDto -> Ticket
         CreateMap<PurchaseResultDto, Ticket>();

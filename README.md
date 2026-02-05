@@ -55,7 +55,7 @@ JWT Authentication
 AutoMapper
 Swagger / OpenAPI
 
-📁 Project Structure (High Level)
+ Project Structure
 EventTicketSystem
 │
 ├── Controllers
@@ -64,10 +64,15 @@ EventTicketSystem
 │   ├── EventServices
 │   └── TicketServices
 ├── Models
-├── DTOs
 ├── MappingProfiles
 ├── Data
 └── Program.cs
+
+EventTicketSystem_DTOs
+│
+├── AuthDtos
+├── EventDtos
+└── TicketDtos
 
 -Authentication Flow (JWT)
 User registers or logs in

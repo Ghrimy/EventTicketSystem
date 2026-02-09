@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Data;
 using AutoMapper;
 using EventTicketSystem_DTOs.TicketDtos;
 using EventTicketSystem.Data;
@@ -15,20 +16,21 @@ public class TicketService(EventTicketDbContext context, IMapper mapper, IAuthSe
     {
         var currentUser = authService.GetUserId();
         
-        var existingEvent = context.Events.Include(@event => @event.Tickets).FirstOrDefault(e => e.EventId == purchaseTicketDto.EventId);
-        if(existingEvent == null) 
-            throw new Exception("Event does not exist");
+        var existingEvent = context.Events
+            .FirstOrDefault(e => e.EventId == purchaseTicketDto.EventId);
         
-        if(existingEvent.EventDate < DateTime.UtcNow)
-            throw new Exception("Event has already ended");
+        if(existingEvent == null || existingEvent.EventDate < DateTime.UtcNow) 
+            throw new ValidationException("Event does not exist/has already ended");
         
         if(purchaseTicketDto.Quantity <= 0)
             throw new Exception("Quantity must be greater than 0");
         
-        var remainingTickets = existingEvent.TotalTickets - existingEvent.Tickets.Sum(t => t.Quantity);
+        var remainingTickets = existingEvent.TotalTickets - existingEvent.TicketsSold;
         if (remainingTickets < 1 || remainingTickets < purchaseTicketDto.Quantity)
             throw new Exception("Not enough tickets left");
-
+        
+        existingEvent.TicketsSold += purchaseTicketDto.Quantity;
+        
         var totalPrice = purchaseTicketDto.Quantity * existingEvent.TicketPrice;
         var purchasedAt = DateTime.UtcNow;
         var newTicket = new Ticket()
@@ -39,34 +41,59 @@ public class TicketService(EventTicketDbContext context, IMapper mapper, IAuthSe
             PricePaid = totalPrice,
             PurchasedAt = purchasedAt
         };
-
-        context.Tickets.Add(newTicket);
-        await context.SaveChangesAsync();
-        return new PurchaseResultDto()
+        try
         {
+            context.Tickets.Add(newTicket);
+            await context.SaveChangesAsync();
+            return new PurchaseResultDto()
+            {
                 EventId = purchaseTicketDto.EventId,
                 EventName = existingEvent.EventName,
                 Quantity = purchaseTicketDto.Quantity,
                 PricePerTicket = existingEvent.TicketPrice,
                 TotalPrice = totalPrice,
                 PurchasedAt = purchasedAt
-        };
+            };
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            throw new ValidationException(
+                "Tickets were just sold out. Please refresh and try again."
+            );
+        }
     }
 
     public async Task<List<GetTicketInformationDto>> GetAllTicketsForCurrentUserAsync()
     {
         var currentUser = authService.GetUserId();
-        var tickets =  await context.Tickets.Where(t => t.ApplicationUserId == currentUser).Select(t => mapper.Map<GetTicketInformationDto>(t)).ToListAsync();
-        return mapper.Map<List<GetTicketInformationDto>>(tickets);
+        return await context.Tickets.Where(t => t.ApplicationUserId == currentUser)
+            .Include(e => e.Event.EventName)
+            .Include(e => e.Event.EventDate)
+            .Include(e => e.Event.EventLocation) 
+            .Select(t => mapper.Map<GetTicketInformationDto>(t)).ToListAsync();
     }
 
     public async Task<CancelTicketDto> CancelTicketAsync(int ticketId)
     {
-        throw new NotImplementedException();
+        var user = authService.GetUserId();
+        var existingEvent = await context.Events.Include(e => e.Tickets).FirstOrDefaultAsync(e => e.Tickets.Any(t => t.TicketId == ticketId));
+        if (existingEvent == null) throw new ValidationException("Event does not exist");
+        if (existingEvent.EventDate < DateTime.UtcNow) throw new Exception("Event has already ended");
+        
+        var userTickets = await context.Tickets.FirstOrDefaultAsync(t => t.ApplicationUserId == user && t.TicketId == ticketId);
+        if (userTickets == null) throw new ValidationException("Ticket does not exist");
+        
+        context.Tickets.Remove(userTickets);
+        existingEvent.TicketsSold -= userTickets.Quantity;
+        
+        await context.SaveChangesAsync();
+        return mapper.Map<CancelTicketDto>(userTickets);
     }
 
-    public async Task<GetTicketInformationDto> GetTicketByNameAsync(int eventId)
+    public async Task<List<GetTicketInformationDto>> GetTicketByIdAsync(int eventId)
     {
-        throw new NotImplementedException();
+        var user = authService.GetUserId();
+        var userTickets = await context.Tickets.FirstOrDefaultAsync(t => t.ApplicationUserId == user && t.EventId == eventId);
+        return mapper.Map<List<GetTicketInformationDto>>(userTickets) ?? throw new Exception("Ticket does not exist");
     }
 }

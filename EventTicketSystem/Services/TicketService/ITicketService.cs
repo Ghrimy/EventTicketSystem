@@ -9,5 +9,5 @@ public interface ITicketService
     public Task<PurchaseResultDto> PurchaseTicketAsync(PurchaseTicketDto purchaseTicketDto);
     public Task<List<GetTicketInformationDto>> GetAllTicketsForCurrentUserAsync();
     public Task<CancelTicketDto> CancelTicketAsync(int ticketId);
-    public Task<GetTicketInformationDto> GetTicketByNameAsync(int eventId);
+    public Task<List<GetTicketInformationDto>> GetTicketByIdAsync(int eventId);
 }

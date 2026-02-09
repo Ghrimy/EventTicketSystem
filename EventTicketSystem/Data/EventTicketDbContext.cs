@@ -26,6 +26,10 @@ public class EventTicketDbContext : IdentityDbContext<ApplicationUser>
             .Property(p => p.TicketPrice)
             .HasColumnType("decimal(18,2)");
 
+        modelBuilder.Entity<Event>()
+            .Property(p => p.RowVersion)
+            .IsConcurrencyToken();
+
         // Ticket → ApplicationUser
         modelBuilder.Entity<Ticket>()
             .HasOne(t => t.ApplicationUser)

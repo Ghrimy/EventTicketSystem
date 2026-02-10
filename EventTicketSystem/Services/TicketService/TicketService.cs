@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.Data;
 using AutoMapper;
 using EventTicketSystem_DTOs.TicketDtos;
 using EventTicketSystem.Data;
@@ -67,9 +66,6 @@ public class TicketService(EventTicketDbContext context, IMapper mapper, IAuthSe
     {
         var currentUser = authService.GetUserId();
         return await context.Tickets.Where(t => t.ApplicationUserId == currentUser)
-            .Include(e => e.Event.EventName)
-            .Include(e => e.Event.EventDate)
-            .Include(e => e.Event.EventLocation) 
             .Select(t => mapper.Map<GetTicketInformationDto>(t)).ToListAsync();
     }
 

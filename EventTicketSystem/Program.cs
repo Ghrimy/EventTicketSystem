@@ -3,6 +3,7 @@ using EventTicketSystem.Data;
 using EventTicketSystem.Models;
 using EventTicketSystem.Services.AuthServices;
 using EventTicketSystem.Services.EventServices;
+using EventTicketSystem.Services.TicketService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -71,6 +72,8 @@ builder.Services.AddHttpContextAccessor();
 // Add services to the container.
 builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<ITicketService, TicketService>();
+
 builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 

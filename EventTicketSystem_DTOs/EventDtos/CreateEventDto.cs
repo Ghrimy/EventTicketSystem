@@ -8,4 +8,6 @@ public class CreateEventDto
     [Required] public string EventDescription { get; set; } = string.Empty;
     [Required] public DateTime EventDate { get; set; }
     [Required] public string EventLocation { get; set; } = string.Empty;
+    [Required] public int TotalTickets { get; set; }
+    [Required] public decimal TicketPrice { get; set; }
 }

@@ -27,7 +27,15 @@ public class EventService(EventTicketDbContext context, IMapper mapper) : IEvent
         var isExistingEvent = await context.Events.Where(e => e.EventName == eventDto.EventName).AnyAsync();
         if(isExistingEvent) throw new Exception("Event already exists");
 
-        var createNewEvent = mapper.Map<Event>(eventDto);
+        var createNewEvent = new Event()
+        {
+            EventName = eventDto.EventName,
+            EventDate = eventDto.EventDate,
+            EventLocation = eventDto.EventLocation,
+            TotalTickets = eventDto.TotalTickets,
+            EventDescription = eventDto.EventDescription,
+            TicketPrice = eventDto.TicketPrice,
+        };
         
         context.Events.Add(createNewEvent);
         await context.SaveChangesAsync();

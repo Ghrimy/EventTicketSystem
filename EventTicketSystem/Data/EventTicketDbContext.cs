@@ -28,7 +28,7 @@ public class EventTicketDbContext : IdentityDbContext<ApplicationUser>
 
         modelBuilder.Entity<Event>()
             .Property(p => p.RowVersion)
-            .IsConcurrencyToken();
+            .IsRowVersion();
 
         // Ticket → ApplicationUser
         modelBuilder.Entity<Ticket>()

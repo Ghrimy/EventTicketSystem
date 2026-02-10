@@ -17,12 +17,12 @@ public class Event
     public decimal TicketPrice { get; set; }
 
     //Organizer features
-    public string OrganizerId { get; set; } = default!;
-    public ApplicationUser Organizer { get; set; } = default!;
+    //public string OrganizerId { get; set; } = default!;
+    //public ApplicationUser Organizer { get; set; } = default!;
     
     // All Tickets sold
     public ICollection<Ticket> Tickets { get; set; } = new List<Ticket>();
 
     //Concurrency check
-    [ConcurrencyCheck] public byte[] RowVersion { get; set; }
+    [Timestamp] public byte[] RowVersion { get; set; } = default!;
 }

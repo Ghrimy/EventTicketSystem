@@ -2,6 +2,8 @@
 using AutoMapper;
 using EventTicketSystem_DTOs.TicketDtos;
 using EventTicketSystem.Data;
+using EventTicketSystem.Middleware.EventExceptions;
+using EventTicketSystem.Middleware.TicketExceptions;
 using EventTicketSystem.Models;
 using EventTicketSystem.Services.AuthServices;
 using Microsoft.EntityFrameworkCore;
@@ -56,9 +58,14 @@ public class TicketService(EventTicketDbContext context, IMapper mapper, IAuthSe
         }
         catch (DbUpdateConcurrencyException)
         {
-            throw new ValidationException(
-                "Tickets were just sold out. Please refresh and try again."
-            );
+            var exists = await context.Events
+                .AnyAsync(e => e.EventId == purchaseTicketDto.EventId);
+
+            if (!exists)
+                throw new EventNotFoundException(purchaseTicketDto.EventId);
+
+            throw new ConcurrencyConflictException(
+                "This event was modified by another user. Please refresh and try again.");
         }
     }
 

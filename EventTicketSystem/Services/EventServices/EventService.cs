@@ -1,31 +1,31 @@
 ﻿using AutoMapper;
 using EventTicketSystem_DTOs.EventDtos;
 using EventTicketSystem.Data;
+using EventTicketSystem.Middleware.EventExceptions;
 using EventTicketSystem.Models;
+using EventTicketSystem.Services.AuthServices;
 using Microsoft.EntityFrameworkCore;
 
 namespace EventTicketSystem.Services.EventServices;
 
-public class EventService(EventTicketDbContext context, IMapper mapper) : IEventService
+public class EventService(EventTicketDbContext context, IMapper mapper, IAuthService authService) : IEventService
 {
-    public async Task<List<ReturnEventDto>> GetEventByNameAsync(string eventName)
+    public ReturnEventDto GetEventByIdAsync(int eventId)
     {
-        var findEvent = await context.Events.Where(e => e.EventName == eventName).ToListAsync();
-        if(findEvent == null) throw new Exception("Event does not exist");
-        
-        return mapper.Map<List<ReturnEventDto>>(findEvent);
-        
+        var findEvent = context.Events.Where(e => e.EventId == eventId);
+        return mapper.Map<ReturnEventDto>(findEvent) ?? throw new EventNotFoundException(eventId);
     }
     public async Task<List<ShowAllEventsDto>> GetAllEventsAsync()
     {
         var retrieveEvents = await context.Events.Where(e => e.EventId >= 0).ToListAsync();
-        return retrieveEvents.Count == 0 ? throw new Exception("No events found") : mapper.Map<List<ShowAllEventsDto>>(retrieveEvents);
+        return retrieveEvents.Count == 0 ? throw new EventNotFoundException(0) : mapper.Map<List<ShowAllEventsDto>>(retrieveEvents);
     }
 
     public async Task<CreateEventDto> CreateEventAsync(CreateEventDto eventDto)
     {
+        var authUser = authService.GetUserId();
         var isExistingEvent = await context.Events.Where(e => e.EventName == eventDto.EventName).AnyAsync();
-        if(isExistingEvent) throw new Exception("Event already exists");
+        if (isExistingEvent) throw new EventAlreadyExistsException(eventDto.EventName);
 
         var createNewEvent = new Event()
         {
@@ -35,6 +35,7 @@ public class EventService(EventTicketDbContext context, IMapper mapper) : IEvent
             TotalTickets = eventDto.TotalTickets,
             EventDescription = eventDto.EventDescription,
             TicketPrice = eventDto.TicketPrice,
+            OrganizerId = authUser
         };
         
         context.Events.Add(createNewEvent);
@@ -42,9 +43,9 @@ public class EventService(EventTicketDbContext context, IMapper mapper) : IEvent
         return eventDto;
     }
 
-    public async Task<EditEventDto> EditEventAsync(EditEventDto eventDto, string eventName)
+    public async Task<EditEventDto> EditEventAsync(EditEventDto eventDto)
     {
-        var isExistingEvent = await context.Events.FirstOrDefaultAsync(e => e.EventName == eventName);
+        var isExistingEvent = await context.Events.FirstOrDefaultAsync(e => e.EventId == eventDto.EventId);
         if(isExistingEvent == null) throw new Exception("Event does not exist");
         
         var editEvent = mapper.Map<Event>(eventDto);

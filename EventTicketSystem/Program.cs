@@ -1,5 +1,6 @@
 using System.Text;
 using EventTicketSystem.Data;
+using EventTicketSystem.Middleware;
 using EventTicketSystem.Models;
 using EventTicketSystem.Services.AuthServices;
 using EventTicketSystem.Services.EventServices;
@@ -90,7 +91,8 @@ if (app.Environment.IsDevelopment())
 }
 
 
-    
+app.UseMiddleware<GlobalExceptionMiddleware>();
+
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseHttpsRedirection();

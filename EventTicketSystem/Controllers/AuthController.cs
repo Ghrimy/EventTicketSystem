@@ -1,4 +1,5 @@
-﻿using EventTicketSystem_DTOs.AuthDto;
+﻿using System.ComponentModel.DataAnnotations;
+using EventTicketSystem_DTOs.AuthDto;
 using EventTicketSystem.Services.AuthServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,9 +18,9 @@ public class AuthController(IAuthService authService) : ControllerBase
         {
             return Ok(await authService.RegisterUserAsync(registerUserDto));
         }
-        catch (Exception e)
+        catch (ValidationException e)
         {
-            return BadRequest(e.Message);
+            return ValidationProblem(e.Message);
         }
     }
 
@@ -29,6 +30,10 @@ public class AuthController(IAuthService authService) : ControllerBase
         try
         {
             return Ok(await authService.LoginUserAsync(loginUserDto));
+        }
+        catch (UnauthorizedAccessException e)
+        {
+            return Unauthorized(e.Message);
         }
         catch (Exception e)
         {

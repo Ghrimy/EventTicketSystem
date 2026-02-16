@@ -2,6 +2,7 @@
 using System.Security.Claims;
 using System.Text;
 using EventTicketSystem_DTOs.AuthDto;
+using EventTicketSystem.Middleware.AuthenticationExceptions;
 using EventTicketSystem.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
@@ -17,10 +18,10 @@ public class AuthService(UserManager<ApplicationUser> userManager,
     {
         var existingUser = await userManager.FindByEmailAsync(registerUserDto.Email);
         if(existingUser != null) 
-            throw new Exception("Email already exists");
+            throw new UserAlreadyExistsException("Email is already used.");
         
         if(registerUserDto.Password != registerUserDto.ConfirmPassword) 
-            throw new Exception("Passwords do not match");
+            throw new NoPasswordMatchException("Passwords do not match");
         
         var user = new ApplicationUser {UserName = registerUserDto.UserName, Email = registerUserDto.Email };
         var result = await userManager.CreateAsync(user, registerUserDto.Password);
@@ -44,10 +45,10 @@ public class AuthService(UserManager<ApplicationUser> userManager,
     public async Task<AuthResultDto> LoginUserAsync(LoginUserDto loginUserDto)
     {
         var user = await userManager.FindByEmailAsync(loginUserDto.Email);
-        if (user == null) throw new Exception("User does not exist");
+        if (user == null) throw new UserDoesNotExistException("User does not exist");
 
         var result = await signInManager.PasswordSignInAsync(user, loginUserDto.Password, false, false);
-        if (!result.Succeeded) return new AuthResultDto { Succeeded = false, Error = "Invalid credentials" };
+        if (!result.Succeeded) throw new NoPasswordMatchException("Password is incorrect");
 
         var token = await GenerateJwtToken(user);
 
@@ -57,8 +58,7 @@ public class AuthService(UserManager<ApplicationUser> userManager,
 
     public async Task LogoutUserAsync()
     {
-       var result = signInManager.SignOutAsync();
-       await Task.CompletedTask;
+       await signInManager.SignOutAsync();
     }
 
     public ReturnCurrentUserDto GetCurrentUser()
@@ -68,8 +68,8 @@ public class AuthService(UserManager<ApplicationUser> userManager,
         
         return new ReturnCurrentUserDto()
         {
-            Id = user.FindFirstValue(ClaimTypes.NameIdentifier) ?? throw new Exception("Error getting user id"),
-            Email = user.FindFirstValue(ClaimTypes.Email) ?? throw new Exception("Error getting user email"),
+            Id = user.FindFirstValue(ClaimTypes.NameIdentifier) ?? throw new UserIdNotFoundException("Authenticated user has no Id claim."),
+            Email = user.FindFirstValue(ClaimTypes.Email) ?? throw new UserEmailNotFoundException("Authenticated user has no Email claim."),
             Roles = user.FindAll(ClaimTypes.Role).Select(r => r.Value).ToList()
         };
     }
@@ -92,7 +92,7 @@ public class AuthService(UserManager<ApplicationUser> userManager,
             issuer: configuration["Jwt:Issuer"],
             audience: configuration["Jwt:Audience"],
             claims: claims,
-            expires: DateTime.Now.AddMinutes(double.Parse(configuration["Jwt:ExpiresInMinutes"])),
+            expires: DateTime.UtcNow.AddMinutes(double.Parse(configuration["Jwt:ExpiresInMinutes"])),
             signingCredentials: creds
         );
 
@@ -107,6 +107,6 @@ public class AuthService(UserManager<ApplicationUser> userManager,
             throw new UnauthorizedAccessException("User is not authenticated");
 
         return user.FindFirstValue(ClaimTypes.NameIdentifier)
-               ?? throw new Exception("User id claim is missing");
+               ?? throw new UserIdNotFoundException("Authenticated user has no Id claim.");
     }
 }

@@ -46,7 +46,7 @@ public class EventService(EventTicketDbContext context, IMapper mapper, IAuthSer
     public async Task<EditEventDto> EditEventAsync(EditEventDto eventDto)
     {
         var isExistingEvent = await context.Events.FirstOrDefaultAsync(e => e.EventId == eventDto.EventId);
-        if(isExistingEvent == null) throw new Exception("Event does not exist");
+        if(isExistingEvent == null) throw new EventNotFoundException(eventDto.EventId);
         
         var editEvent = mapper.Map<Event>(eventDto);
         context.Events.Update(editEvent);
@@ -57,7 +57,7 @@ public class EventService(EventTicketDbContext context, IMapper mapper, IAuthSer
     public async Task<RemoveEventDto> RemoveEventAsync(RemoveEventDto eventDto)
     {
         var isExistingEvent = await context.Events.FirstOrDefaultAsync(e => e.EventName == eventDto.EventName || e.EventId == eventDto.EventId);
-        if(isExistingEvent == null) throw new Exception("Event does not exist");
+        if(isExistingEvent == null) throw new EventNotFoundException(eventDto.EventId);
 
         context.Events.Remove(isExistingEvent);
         await context.SaveChangesAsync();

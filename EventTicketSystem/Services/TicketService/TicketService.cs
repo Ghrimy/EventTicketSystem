@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Transactions;
 using AutoMapper;
 using EventTicketSystem_DTOs.TicketDtos;
 using EventTicketSystem.Data;
@@ -17,8 +17,8 @@ public class TicketService(EventTicketDbContext context, IMapper mapper, IAuthSe
     {
         var currentUser = authService.GetUserId();
         
-        var existingEvent = context.Events
-            .FirstOrDefault(e => e.EventId == purchaseTicketDto.EventId);
+        var existingEvent = await context.Events
+            .FirstOrDefaultAsync(e => e.EventId == purchaseTicketDto.EventId);
         
         if(existingEvent == null) 
             throw new EventNotFoundException(purchaseTicketDto.EventId);
@@ -29,6 +29,8 @@ public class TicketService(EventTicketDbContext context, IMapper mapper, IAuthSe
         if(purchaseTicketDto.Quantity <= 0)
             throw new ValidPurchaseAmountException(purchaseTicketDto.Quantity);
 
+        await using var transaction = await context.Database.BeginTransactionAsync();
+        
         var remainingTickets = existingEvent.TotalTickets - existingEvent.TicketsSold;
         if (remainingTickets < 1 || remainingTickets < purchaseTicketDto.Quantity)
             throw new TicketSoldOutException(purchaseTicketDto.EventId);
@@ -49,13 +51,14 @@ public class TicketService(EventTicketDbContext context, IMapper mapper, IAuthSe
         {
             context.Tickets.Add(newTicket);
             await context.SaveChangesAsync();
+            await transaction.CommitAsync();
             return newTicket.TicketId;
         }
         catch (DbUpdateConcurrencyException)
         {
             var exists = await context.Events
                 .AnyAsync(e => e.EventId == purchaseTicketDto.EventId);
-
+            
             if (!exists)
                 throw new EventNotFoundException(purchaseTicketDto.EventId);
 
@@ -74,24 +77,28 @@ public class TicketService(EventTicketDbContext context, IMapper mapper, IAuthSe
     public async Task<CancelTicketDto> CancelTicketAsync(int ticketId)
     {
         var user = authService.GetUserId();
-        var existingEvent = await context.Events.Include(e => e.Tickets).FirstOrDefaultAsync(e => e.Tickets.Any(t => t.TicketId == ticketId));
-        if (existingEvent == null) throw new EventDoesNotExistException("No event was found");
-        if (existingEvent.EventDate < DateTime.UtcNow) throw new EventEndedException(existingEvent.EventName);
         
-        var userTickets = await context.Tickets.FirstOrDefaultAsync(t => t.ApplicationUserId == user && t.TicketId == ticketId);
+        var userTickets = await context.Tickets.FirstOrDefaultAsync(t => t.ApplicationUserId == user);
         if (userTickets == null) throw new UserHasNoTicketException(ticketId);
         
+        var existingEvent = await context.Events.FirstOrDefaultAsync(e => e.EventId == userTickets.EventId);
+        if (existingEvent == null) throw new EventDoesNotExistException("No event was found");
+        
+        if (existingEvent.EventDate < DateTime.UtcNow) throw new EventEndedException(existingEvent.EventName);
+        
+        await using var transaction = await context.Database.BeginTransactionAsync();
         context.Tickets.Remove(userTickets);
         existingEvent.TicketsSold -= userTickets.Quantity;
         
         await context.SaveChangesAsync();
+        await transaction.CommitAsync();
         return mapper.Map<CancelTicketDto>(userTickets);
     }
 
-    public async Task<List<GetTicketInformationDto>> GetTicketByIdAsync(int eventId)
+    public async Task<GetTicketInformationDto> GetTicketByIdAsync(int eventId)
     {
         var user = authService.GetUserId();
         var userTickets = await context.Tickets.FirstOrDefaultAsync(t => t.ApplicationUserId == user && t.EventId == eventId);
-        return mapper.Map<List<GetTicketInformationDto>>(userTickets) ?? throw new NoTicketFoundException(eventId);
+        return mapper.Map<GetTicketInformationDto>(userTickets) ?? throw new NoTicketFoundException(eventId);
     }
 }

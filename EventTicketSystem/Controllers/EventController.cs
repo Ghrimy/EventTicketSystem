@@ -6,46 +6,42 @@ using Microsoft.AspNetCore.Mvc;
 namespace EventTicketSystem.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/events")]
 public class EventController(IEventService eventService) : ControllerBase
 {
 
-    [HttpGet("events/{id:int}")]
-    public ActionResult<ShowAllEventsDto> GetEventById([FromBody] int eventId)
+    [HttpGet("{eventId:int}")]
+    public async Task<ActionResult<ShowAllEventsDto>> GetEventById(int eventId)
     {
-        var result =  eventService.GetEventByIdAsync(eventId);
-        return Ok(result);
+        return Ok(await eventService.GetEventByIdAsync(eventId));
     }
     
-    [HttpGet("events")]
+    [HttpGet]
     public async Task<ActionResult<List<ShowAllEventsDto>>> GetEvents()
     {
-        var events = await eventService.GetAllEventsAsync();
-        return Ok(events);
+        return Ok(await eventService.GetAllEventsAsync());
     }
     
+    [Authorize(Roles = "Organizer", AuthenticationSchemes = "Bearer")]
+    [HttpPost]
+    public async Task<IActionResult> CreateEvent([FromBody] CreateEventDto eventDto)
+    {
+        var createdEventId = await eventService.CreateEventAsync(eventDto);
+        return CreatedAtAction(nameof(GetEventById), new {eventId = createdEventId}, null);
+    }
 
     [Authorize(Roles = "Organizer", AuthenticationSchemes = "Bearer")]
-    [HttpPost("events")]
-    public async Task<IActionResult> CreateEvent(CreateEventDto eventDto)
+    [HttpPatch("{eventId:int}")]
+    public async Task<IActionResult> EditEvent(int eventId, EditEventDto editEventDto)
     {
-        var result = await eventService.CreateEventAsync(eventDto);
-        return Ok(result);
+        return Ok(await eventService.EditEventAsync(eventId, editEventDto));
     }
 
-    [Authorize(Roles = "Organizer")]
-    [HttpPatch("edit-event")]
-    public async Task<IActionResult> EditEvent(EditEventDto editEventDto)
+    [Authorize(Roles = "Organizer", AuthenticationSchemes = "Bearer")]
+    [HttpDelete("{eventId:int}")]
+    public async Task<IActionResult> DeleteEvent(int eventId, RemoveEventDto removeEventDto)
     {
-        var result = await eventService.EditEventAsync(editEventDto);
-        return Ok(result);
-    }
-
-    [Authorize(Roles = "Organizer")]
-    [HttpDelete("delete-event")]
-    public async Task<IActionResult> DeleteEvent(RemoveEventDto removeEventDto)
-    {
-        var result = await eventService.RemoveEventAsync(removeEventDto);
-        return Ok(result);
+        await eventService.GetEventByIdAsync(eventId);
+        return NoContent();
     }
 }

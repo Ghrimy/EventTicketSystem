@@ -13,7 +13,7 @@ namespace EventTicketSystem.Services.TicketService;
 
 public class TicketService(EventTicketDbContext context, IMapper mapper, IAuthService authService) : ITicketService
 {
-    public async Task<PurchaseResultDto> PurchaseTicketAsync(PurchaseTicketDto purchaseTicketDto)
+    public async Task<int> PurchaseTicketAsync(PurchaseTicketDto purchaseTicketDto)
     {
         var currentUser = authService.GetUserId();
         
@@ -28,7 +28,7 @@ public class TicketService(EventTicketDbContext context, IMapper mapper, IAuthSe
         
         if(purchaseTicketDto.Quantity <= 0)
             throw new ValidPurchaseAmountException(purchaseTicketDto.Quantity);
-        
+
         var remainingTickets = existingEvent.TotalTickets - existingEvent.TicketsSold;
         if (remainingTickets < 1 || remainingTickets < purchaseTicketDto.Quantity)
             throw new TicketSoldOutException(purchaseTicketDto.EventId);
@@ -49,15 +49,7 @@ public class TicketService(EventTicketDbContext context, IMapper mapper, IAuthSe
         {
             context.Tickets.Add(newTicket);
             await context.SaveChangesAsync();
-            return new PurchaseResultDto()
-            {
-                EventId = purchaseTicketDto.EventId,
-                EventName = existingEvent.EventName,
-                Quantity = purchaseTicketDto.Quantity,
-                PricePerTicket = existingEvent.TicketPrice,
-                TotalPrice = totalPrice,
-                PurchasedAt = purchasedAt
-            };
+            return newTicket.TicketId;
         }
         catch (DbUpdateConcurrencyException)
         {

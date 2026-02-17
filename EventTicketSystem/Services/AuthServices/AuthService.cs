@@ -36,6 +36,7 @@ public class AuthService(UserManager<ApplicationUser> userManager,
         }
         
         await userManager.AddToRoleAsync(user, "User");
+        await userManager.AddToRoleAsync(user, "Organizer");
         return new AuthResultDto()
         {
             Succeeded = result.Succeeded

@@ -7,63 +7,37 @@ namespace EventTicketSystem.Controllers;
 
 [Authorize(AuthenticationSchemes = "Bearer")]
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/tickets")]
 public class TicketController(ITicketService ticketService) : ControllerBase
 {
 
-    [HttpPost("purchase-ticket")]
+    [HttpPost]
     public async Task<IActionResult> PurchaseTicket([FromBody] PurchaseTicketDto dto)
     {
-        try
-        {
-            var result = await ticketService.PurchaseTicketAsync(dto);
-            return Ok(result);
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
+        var ticketId = await ticketService.PurchaseTicketAsync(dto);
+
+        return CreatedAtAction(
+            nameof(GetTicket),
+            new { ticketId },
+            null);
     }
-    
-    [HttpGet("my-tickets")]
+
+    [HttpGet]
     public async Task<IActionResult> GetMyTickets()
     {
-        try
-        {
-            var tickets = await ticketService.GetAllTicketsForCurrentUserAsync();
-            return Ok(tickets);
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
+        return Ok(await ticketService.GetAllTicketsForCurrentUserAsync());
     }
 
-    [HttpPost("get-ticket/{ticketId:int}")]
+    [HttpGet("{ticketId:int}")]
     public async Task<IActionResult> GetTicket(int ticketId)
     {
-        try
-        {
-            var ticket = await ticketService.GetTicketByIdAsync(ticketId);
-            return Ok(ticket);
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
+        return Ok(await ticketService.GetTicketByIdAsync(ticketId));
     }
-
-    [HttpPost("cancel-ticket/{ticketId:int}")]
+    
+    [HttpDelete("{ticketId:int}")]
     public async Task<IActionResult> CancelTicket(int ticketId)
     {
-        try
-        {
-            var result = await ticketService.CancelTicketAsync(ticketId);
-            return Ok(result);
-        }
-        catch (Exception e)
-        {
-            return BadRequest(e.Message);
-        }
+        await ticketService.CancelTicketAsync(ticketId);
+        return NoContent();
     }
 }

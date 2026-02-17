@@ -5,9 +5,9 @@ namespace EventTicketSystem.Services.EventServices;
 
 public interface IEventService
 {
-    public ReturnEventDto GetEventByIdAsync(int eventId);
+    public Task<ReturnEventDto> GetEventByIdAsync(int eventId);
     public Task<List<ShowAllEventsDto>> GetAllEventsAsync();
-    public Task<CreateEventDto> CreateEventAsync(CreateEventDto eventDto);
-    public Task<EditEventDto> EditEventAsync(EditEventDto eventDto);
-    public Task<RemoveEventDto> RemoveEventAsync(RemoveEventDto eventDto);
+    public Task<int> CreateEventAsync(CreateEventDto eventDto);
+    public Task<EditEventDto> EditEventAsync(int eventId, EditEventDto eventDto);
+    public Task<RemoveEventDto> RemoveEventAsync(int eventId, RemoveEventDto eventDto);
 }
